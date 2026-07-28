@@ -361,6 +361,7 @@ def validate_source_projection(root: Path) -> None:
     required_compile_fragments = [
         'f":app:compile{variant}DebugJavaWithJavac"',
         '"./gradlew", "--no-daemon", "--stacktrace"',
+        "android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407",
         'sdkmanager "platforms;android-36" "build-tools;36.0.0"',
         'python3 tools/compile_source_matrix.py --execute',
         '"$ANDROID_HOME/platforms/android-36/android.jar"',

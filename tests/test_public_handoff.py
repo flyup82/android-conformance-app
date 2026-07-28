@@ -164,6 +164,21 @@ class PublicHandoffTest(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "compile-only CI"):
             validate(root)
 
+    def test_android_setup_action_pin_drift_is_rejected(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        workflow = root / ".github/workflows/public-contract.yml"
+        workflow.write_text(
+            workflow.read_text(encoding="utf-8").replace(
+                "android-actions/setup-android@"
+                "9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407",
+                "android-actions/setup-android@v3",
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(ValidationError, "compile-only CI missing"):
+            validate(root)
+
     def test_wrapper_tamper_is_rejected(self) -> None:
         temp, root = self.copy_repository()
         self.addCleanup(temp.cleanup)

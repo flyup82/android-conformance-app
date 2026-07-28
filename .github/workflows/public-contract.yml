@@ -20,6 +20,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
       - name: Validate public handoff
         run: python3 tools/validate_public_handoff.py
       - name: Run deterministic tests

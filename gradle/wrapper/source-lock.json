@@ -1,0 +1,18 @@
+{
+  "version": "9.5.0",
+  "source_tag": "v9.5.0",
+  "files": {
+    "gradlew": {
+      "url": "https://raw.githubusercontent.com/gradle/gradle/v9.5.0/gradlew",
+      "sha256": "45bda8deaef01b732f07bd317f962a736e349c6faa6662829bc0f41293b51212"
+    },
+    "gradlew.bat": {
+      "url": "https://raw.githubusercontent.com/gradle/gradle/v9.5.0/gradlew.bat",
+      "sha256": "9e62ee9a1c6eb7cecc90e55acc3ff09a1631ccfe3edddf180538a1e42b1532dc"
+    },
+    "gradle/wrapper/gradle-wrapper.jar": {
+      "url": "https://raw.githubusercontent.com/gradle/gradle/v9.5.0/gradle/wrapper/gradle-wrapper.jar",
+      "sha256": "497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7"
+    }
+  }
+}

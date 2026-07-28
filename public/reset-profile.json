@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "profile_id": "reset:android-conformance-r1",
+  "package_id": "io.github.flyup82.androidconformance",
+  "deterministic": true,
+  "authority": "fresh_exact_android_qagent_approval_required",
+  "steps": [
+    "force_stop_exact_package",
+    "clear_exact_package_data",
+    "launch_exact_main_activity",
+    "verify_fixture_revision_and_composition"
+  ],
+  "cleared_state": [
+    "shared_preferences",
+    "database",
+    "files",
+    "cache",
+    "webview_profile"
+  ],
+  "preserved_state": [
+    "public_build_identity",
+    "public_fixture_identity"
+  ],
+  "network": {
+    "external_origin_count": 0,
+    "dataset": "embedded_deterministic"
+  },
+  "failure_policy": "typed_inconclusive_cleanup_failure_and_quarantine"
+}

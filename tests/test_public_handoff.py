@@ -1,0 +1,103 @@
+from __future__ import annotations
+
+import json
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
+
+from tools.validate_public_handoff import ValidationError, validate
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class PublicHandoffTest(unittest.TestCase):
+    def copy_fixture(self) -> tuple[tempfile.TemporaryDirectory[str], Path]:
+        temp = tempfile.TemporaryDirectory()
+        root = Path(temp.name)
+        shutil.copytree(ROOT / "public", root / "public")
+        return temp, root
+
+    def copy_repository(self) -> tuple[tempfile.TemporaryDirectory[str], Path]:
+        temp = tempfile.TemporaryDirectory()
+        root = Path(temp.name)
+        shutil.copytree(
+            ROOT,
+            root,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+        )
+        return temp, root
+
+    def mutate(self, root: Path, name: str, callback) -> None:
+        path = root / "public" / name
+        value = json.loads(path.read_text(encoding="utf-8"))
+        callback(value)
+        path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+
+    def test_current_public_handoff_is_valid(self) -> None:
+        validate(ROOT)
+
+    def test_private_expected_field_is_rejected(self) -> None:
+        temp, root = self.copy_fixture()
+        self.addCleanup(temp.cleanup)
+        self.mutate(
+            root,
+            "conformance-handoff.json",
+            lambda value: value.update({"expected_graph": {"nodes": []}}),
+        )
+        with self.assertRaisesRegex(ValidationError, "private or secret-shaped key"):
+            validate(root)
+
+    def test_missing_seed_is_rejected(self) -> None:
+        temp, root = self.copy_fixture()
+        self.addCleanup(temp.cleanup)
+        self.mutate(
+            root,
+            "seed-catalog.json",
+            lambda value: value["seeds"].pop(),
+        )
+        with self.assertRaisesRegex(ValidationError, "seed order or membership"):
+            validate(root)
+
+    def test_reset_package_drift_is_rejected(self) -> None:
+        temp, root = self.copy_fixture()
+        self.addCleanup(temp.cleanup)
+        self.mutate(
+            root,
+            "reset-profile.json",
+            lambda value: value.update({"package_id": "other.package"}),
+        )
+        with self.assertRaisesRegex(ValidationError, "reset identity"):
+            validate(root)
+
+    def test_published_claim_without_artifact_is_rejected(self) -> None:
+        temp, root = self.copy_fixture()
+        self.addCleanup(temp.cleanup)
+        self.mutate(
+            root,
+            "conformance-handoff.json",
+            lambda value: value["claims"].update({"apk_verified": True}),
+        )
+        with self.assertRaisesRegex(ValidationError, "claim boundary"):
+            validate(root)
+
+    def test_wrapper_tamper_is_rejected(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        with (root / "gradlew").open("a", encoding="utf-8") as stream:
+            stream.write("\n# tampered\n")
+        with self.assertRaisesRegex(ValidationError, "wrapper digest gradlew"):
+            validate(root)
+
+    def test_signing_material_is_rejected(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        (root / "test-key.jks").write_bytes(b"not-a-real-key")
+        with self.assertRaisesRegex(ValidationError, "signing material"):
+            validate(root)
+
+
+if __name__ == "__main__":
+    unittest.main()

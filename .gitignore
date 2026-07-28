@@ -7,3 +7,5 @@ captures/
 *.jks
 *.keystore
 *.properties.local
+__pycache__/
+*.py[cod]

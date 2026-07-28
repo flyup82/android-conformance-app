@@ -22,8 +22,36 @@ here.
 
 Repository authority was approved by Android QAgent
 `DEC-20260728-043`. The Android source, public handoff and static validation
-will be developed through reviewed changes. No APK has been published,
-installed or executed, and no Android device capability has been verified.
+are being developed through reviewed changes. The current source is a
+composition/identity scaffold: it does not yet implement or claim the ten
+seeded behaviors. No APK has been published, installed or executed, and no
+Android device capability has been verified.
+
+## Public compositions
+
+The `fixture` product-flavor dimension declares:
+
+- `clean` and `normalTwin`;
+- `seed001` through `seed010`, each activating exactly one matching public
+  seed;
+- `allSeeds`, activating the ordered complete catalog.
+
+All variants keep the exact package
+`io.github.flyup82.androidconformance`; variants replace one another rather
+than creating parallel package identities. Release signing is intentionally
+external and USER-owned.
+
+Public machine-readable handoff files live under `public/`. Validate them
+without Android tooling:
+
+```bash
+python3 tools/validate_public_handoff.py
+python3 -m unittest discover -s tests -v
+```
+
+The Gradle wrapper is pinned to 9.5.0. Its official-tag source URLs and file
+digests are recorded in `gradle/wrapper/source-lock.json`. A successful static
+validation or Gradle configuration is not APK or device evidence.
 
 ## Security and authority
 

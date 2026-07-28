@@ -1,12 +1,14 @@
 {
   "schema_version": "1.0.0",
-  "fixture_revision": "android-conformance-r1",
+  "fixture_revision": "android-conformance-r2",
   "seeds": [
     {
       "id": "A-D-001",
       "family": "lifecycle_state_loss",
       "fixture_route": "lifecycle",
       "normal_twin_route": "lifecycle",
+      "trigger_id": "recreate_activity",
+      "external_effects": [],
       "activation_flavor": "seed001"
     },
     {
@@ -14,6 +16,8 @@
       "family": "back_deep_link",
       "fixture_route": "navigation",
       "normal_twin_route": "navigation",
+      "trigger_id": "back_from_detail",
+      "external_effects": [],
       "activation_flavor": "seed002"
     },
     {
@@ -21,6 +25,8 @@
       "family": "permission_denial",
       "fixture_route": "permission",
       "normal_twin_route": "permission",
+      "trigger_id": "deny_camera_permission",
+      "external_effects": ["camera_permission_prompt_only"],
       "activation_flavor": "seed003"
     },
     {
@@ -28,6 +34,8 @@
       "family": "network_recovery",
       "fixture_route": "network",
       "normal_twin_route": "network",
+      "trigger_id": "retry_embedded_transport",
+      "external_effects": [],
       "activation_flavor": "seed004"
     },
     {
@@ -35,6 +43,8 @@
       "family": "accessibility_semantics",
       "fixture_route": "accessibility",
       "normal_twin_route": "accessibility",
+      "trigger_id": "inspect_star_action",
+      "external_effects": [],
       "activation_flavor": "seed005"
     },
     {
@@ -42,6 +52,8 @@
       "family": "adaptive_localization",
       "fixture_route": "adaptive",
       "normal_twin_route": "adaptive",
+      "trigger_id": "inspect_long_localized_text",
+      "external_effects": [],
       "activation_flavor": "seed006"
     },
     {
@@ -49,6 +61,8 @@
       "family": "runtime_stability",
       "fixture_route": "stability",
       "normal_twin_route": "stability",
+      "trigger_id": "trigger_controlled_failure",
+      "external_effects": ["exact_fixture_process_termination"],
       "activation_flavor": "seed007"
     },
     {
@@ -56,6 +70,8 @@
       "family": "persistence",
       "fixture_route": "persistence",
       "normal_twin_route": "persistence",
+      "trigger_id": "recreate_after_increment",
+      "external_effects": ["exact_fixture_private_storage_only"],
       "activation_flavor": "seed008"
     },
     {
@@ -63,6 +79,8 @@
       "family": "intent_platform_boundary",
       "fixture_route": "intent",
       "normal_twin_route": "intent",
+      "trigger_id": "send_untrusted_local_route",
+      "external_effects": ["explicit_same_package_intent_only"],
       "activation_flavor": "seed009"
     },
     {
@@ -70,6 +88,8 @@
       "family": "webview_native_boundary",
       "fixture_route": "webview",
       "normal_twin_route": "webview",
+      "trigger_id": "activate_local_recovery_link",
+      "external_effects": ["embedded_html_only"],
       "activation_flavor": "seed010"
     }
   ],

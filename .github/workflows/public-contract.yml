@@ -16,10 +16,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
       - name: Validate public handoff
         run: python3 tools/validate_public_handoff.py
       - name: Run deterministic tests
         run: python3 -m unittest discover -s tests -v
+      - name: Run pure-Java behavior unit tests
+        run: python3 tools/run_behavior_unit_tests.py
       - name: Reject tracked signing material
         run: |
           if git ls-files | grep -E '\.(jks|keystore)$'; then

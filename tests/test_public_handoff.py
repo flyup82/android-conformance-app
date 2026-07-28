@@ -139,6 +139,31 @@ class PublicHandoffTest(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "external network permission"):
             validate(root)
 
+    def test_compile_matrix_missing_variant_is_rejected(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        script = root / "tools/compile_source_matrix.py"
+        script.write_text(
+            script.read_text(encoding="utf-8").replace('"Seed010",', ""),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(ValidationError, "compile matrix missing Seed010"):
+            validate(root)
+
+    def test_workflow_apk_assembly_is_rejected(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        workflow = root / ".github/workflows/public-contract.yml"
+        workflow.write_text(
+            workflow.read_text(encoding="utf-8").replace(
+                "python3 tools/compile_source_matrix.py --execute",
+                "./gradlew assemble",
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(ValidationError, "compile-only CI"):
+            validate(root)
+
     def test_wrapper_tamper_is_rejected(self) -> None:
         temp, root = self.copy_repository()
         self.addCleanup(temp.cleanup)

@@ -26,6 +26,15 @@ jobs:
         run: python3 -m unittest discover -s tests -v
       - name: Run pure-Java behavior unit tests
         run: python3 tools/run_behavior_unit_tests.py
+      - name: Install exact Android compile packages
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Verify exact Android compile packages
+        run: |
+          grep -Eq '^Pkg[.]Revision[[:space:]]*=[[:space:]]*36[.]0[.]0[[:space:]]*$' \
+            "$ANDROID_HOME/build-tools/36.0.0/source.properties"
+          test -f "$ANDROID_HOME/platforms/android-36/android.jar"
+      - name: Compile all public source compositions
+        run: python3 tools/compile_source_matrix.py --execute
       - name: Reject tracked signing material
         run: |
           if git ls-files | grep -E '\.(jks|keystore)$'; then

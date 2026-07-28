@@ -67,13 +67,19 @@ without Android tooling:
 python3 tools/validate_public_handoff.py
 python3 -m unittest discover -s tests -v
 python3 tools/run_behavior_unit_tests.py
+python3 tools/compile_source_matrix.py
 ```
 
-The last command requires JDK 17 and compiles only the pure-Java behavior model
-and self-test; it does not invoke Gradle or Android tooling. The Gradle wrapper
-is pinned to 9.5.0. Its official-tag source URLs and file digests are recorded
-in `gradle/wrapper/source-lock.json`. Successful static or pure-Java validation
-is not Android build, APK, or device evidence.
+The behavior-unit command requires JDK 17 and compiles only the pure-Java
+behavior model and self-test. The compile-matrix command is plan-only unless
+`--execute` is explicit. Public CI uses that explicit mode with API 36 and
+Build Tools 36.0.0 to run exactly thirteen `JavaWithJavac` tasks. It never
+assembles, packages, signs, publishes or installs an APK and never starts ADB,
+an emulator or a device action.
+
+The Gradle wrapper is pinned to 9.5.0. Its official-tag source URLs and file
+digests are recorded in `gradle/wrapper/source-lock.json`. Successful static,
+pure-Java or compile-only validation is not APK, runtime or device evidence.
 
 ## Security and authority
 

@@ -15,6 +15,30 @@ ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public"
 PACKAGE_ID = "io.github.flyup82.androidconformance"
 SEED_IDS = [f"A-D-{index:03d}" for index in range(1, 11)]
+TRIGGER_IDS = [
+    "recreate_activity",
+    "back_from_detail",
+    "deny_camera_permission",
+    "retry_embedded_transport",
+    "inspect_star_action",
+    "inspect_long_localized_text",
+    "trigger_controlled_failure",
+    "recreate_after_increment",
+    "send_untrusted_local_route",
+    "activate_local_recovery_link",
+]
+EXTERNAL_EFFECTS = [
+    [],
+    [],
+    ["camera_permission_prompt_only"],
+    [],
+    [],
+    [],
+    ["exact_fixture_process_termination"],
+    ["exact_fixture_private_storage_only"],
+    ["explicit_same_package_intent_only"],
+    ["embedded_html_only"],
+]
 FORBIDDEN_KEY_PARTS = {
     "credential",
     "expected_answer",
@@ -66,7 +90,7 @@ def walk_keys(value: Any, path: str = "$") -> None:
 def validate_catalog(catalog: dict[str, Any]) -> None:
     if catalog.get("schema_version") != "1.0.0":
         raise ValidationError("catalog schema_version")
-    if catalog.get("fixture_revision") != "android-conformance-r1":
+    if catalog.get("fixture_revision") != "android-conformance-r2":
         raise ValidationError("catalog fixture_revision")
 
     seeds = catalog.get("seeds")
@@ -76,6 +100,8 @@ def validate_catalog(catalog: dict[str, Any]) -> None:
         not isinstance(item.get("family"), str)
         or not isinstance(item.get("fixture_route"), str)
         or item.get("normal_twin_route") != item.get("fixture_route")
+        or item.get("trigger_id") != TRIGGER_IDS[index - 1]
+        or item.get("external_effects") != EXTERNAL_EFFECTS[index - 1]
         or item.get("activation_flavor") != f"seed{index:03d}"
         for index, item in enumerate(seeds, 1)
     ):
@@ -130,10 +156,15 @@ def validate_handoff(
 ) -> None:
     if handoff.get("schema_version") != "1.0.0":
         raise ValidationError("handoff schema_version")
-    if handoff.get("handoff_status") != "source_scaffold":
+    if handoff.get("handoff_status") != "behavior_source":
         raise ValidationError("handoff status must remain honest")
     if handoff.get("package_id") != PACKAGE_ID or handoff.get("namespace") != PACKAGE_ID:
         raise ValidationError("handoff package identity")
+    if (
+        handoff.get("version_name") != "0.1.0-dev.2"
+        or handoff.get("fixture_revision") != "android-conformance-r2"
+    ):
+        raise ValidationError("handoff source version")
     if handoff.get("public_seed_catalog_digest") != digest(catalog_path):
         raise ValidationError("seed catalog digest")
     if handoff.get("reset_profile_digest") != digest(reset_path):
@@ -162,7 +193,9 @@ def validate_handoff(
         raise ValidationError("private GT boundary")
     claims = handoff.get("claims")
     if not isinstance(claims, dict) or claims != {
-        "source_scaffold_only": True,
+        "source_only": True,
+        "behavior_source_complete": True,
+        "android_build_verified": False,
         "apk_verified": False,
         "device_verified": False,
         "conformance_verified": False,
@@ -211,7 +244,8 @@ def validate_source_projection(root: Path) -> None:
         "compileSdk = 36",
         "minSdk = 28",
         "targetSdk = 36",
-        'versionName = "0.1.0-dev.1"',
+        'versionName = "0.1.0-dev.2"',
+        'AQ_FIXTURE_REVISION", "\\"android-conformance-r2\\""',
         'create("clean")',
         'create("normalTwin")',
         'create("allSeeds")',
@@ -236,8 +270,78 @@ def validate_source_projection(root: Path) -> None:
         / "androidconformance"
         / "SeedCatalog.java"
     ).read_text(encoding="utf-8")
-    if re.findall(r'"(A-D-[0-9]{3})"', java_catalog) != SEED_IDS:
+    catalog_rows = re.findall(
+        r'new Seed\("([^"]+)", "([^"]+)", "([^"]+)", "([^"]+)"\)',
+        java_catalog,
+    )
+    if [row[0] for row in catalog_rows] != SEED_IDS:
         raise ValidationError("Java seed projection")
+    if [row[3] for row in catalog_rows] != TRIGGER_IDS:
+        raise ValidationError("Java trigger projection")
+
+    package_root = (
+        root
+        / "app"
+        / "src"
+        / "main"
+        / "java"
+        / "io"
+        / "github"
+        / "flyup82"
+        / "androidconformance"
+    )
+    behavior = (package_root / "SeedBehavior.java").read_text(encoding="utf-8")
+    activity = (package_root / "MainActivity.java").read_text(encoding="utf-8")
+    manifest = (root / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
+    unit_test = (
+        root
+        / "app"
+        / "src"
+        / "test"
+        / "java"
+        / "io"
+        / "github"
+        / "flyup82"
+        / "androidconformance"
+        / "SeedBehaviorSelfTest.java"
+    ).read_text(encoding="utf-8")
+    behavior_methods = [
+        "restoreLifecycleCounter",
+        "backRouteFromNavigationDetail",
+        "permissionRetryAvailable",
+        "committedOperationsAfterRetry",
+        "accessibilityDescription",
+        "adaptiveContentIsSingleLine",
+        "shouldTriggerControlledFailure",
+        "displayedPersistentCount",
+        "resolveIncomingRoute",
+        "webViewRecoveryAvailable",
+    ]
+    for method in behavior_methods:
+        if method not in behavior or method not in unit_test:
+            raise ValidationError(f"behavior contract or unit test missing {method}")
+    if set(re.findall(r'active\("(A-D-[0-9]{3})"\)', activity)) != set(SEED_IDS):
+        raise ValidationError("activity seed behavior projection")
+    for trigger_id in TRIGGER_IDS:
+        if trigger_id not in activity:
+            raise ValidationError(f"activity trigger projection missing {trigger_id}")
+    required_activity_boundaries = [
+        "new Intent(this, MainActivity.class)",
+        "setJavaScriptEnabled(false)",
+        "setAllowFileAccess(false)",
+        "setAllowContentAccess(false)",
+        "loadDataWithBaseURL(",
+        'throw new IllegalStateException("A-D-007 controlled local failure")',
+    ]
+    for fragment in required_activity_boundaries:
+        if fragment not in activity:
+            raise ValidationError(f"activity boundary missing {fragment}")
+    if "android.permission.CAMERA" not in manifest:
+        raise ValidationError("camera permission fixture declaration")
+    if "android.permission.INTERNET" in manifest:
+        raise ValidationError("external network permission is forbidden")
+    if 'android:scheme="aqconformance"' not in manifest:
+        raise ValidationError("local deep-link declaration")
 
     forbidden_material = [
         path

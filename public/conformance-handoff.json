@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0.0",
-  "handoff_status": "source_scaffold",
+  "handoff_status": "behavior_source",
   "repository": "https://github.com/flyup82/android-conformance-app",
   "package_id": "io.github.flyup82.androidconformance",
   "namespace": "io.github.flyup82.androidconformance",
   "version_code": 1,
-  "version_name": "0.1.0-dev.1",
-  "fixture_revision": "android-conformance-r1",
+  "version_name": "0.1.0-dev.2",
+  "fixture_revision": "android-conformance-r2",
   "android": {
     "min_sdk": 28,
     "target_sdk": 36,
@@ -15,8 +15,8 @@
     "agp": "9.3.0",
     "gradle": "9.5.0"
   },
-  "public_seed_catalog_digest": "sha256:8515f06841d20126f0b4d765744c853fd318f9e03885d97b696c0b14e32602b1",
-  "reset_profile_digest": "sha256:818419e082cb325c7c72075088ab08e0c50eed2a29e36415d88b1b0e676c85de",
+  "public_seed_catalog_digest": "sha256:5258fe1aacfc24691f182a35024e8a178b9ba41f95a466b50255d5cd4fe7657e",
+  "reset_profile_digest": "sha256:a1c05f9e0156856aed1a3d80ab56b728f3c1828ef02a93641577707db5a9b341",
   "source_revision": "PENDING_REVIEWED_COMMIT",
   "build": {
     "status": "not_built_or_published",
@@ -31,7 +31,9 @@
   },
   "private_ground_truth_present": false,
   "claims": {
-    "source_scaffold_only": true,
+    "source_only": true,
+    "behavior_source_complete": true,
+    "android_build_verified": false,
     "apk_verified": false,
     "device_verified": false,
     "conformance_verified": false,

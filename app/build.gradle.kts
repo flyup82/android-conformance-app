@@ -24,9 +24,9 @@ android {
         minSdk = 28
         targetSdk = 36
         versionCode = 1
-        versionName = "0.1.0-dev.1"
+        versionName = "0.1.0-dev.2"
 
-        buildConfigField("String", "AQ_FIXTURE_REVISION", "\"android-conformance-r1\"")
+        buildConfigField("String", "AQ_FIXTURE_REVISION", "\"android-conformance-r2\"")
     }
 
     buildFeatures {

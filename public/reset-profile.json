@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "profile_id": "reset:android-conformance-r1",
+  "profile_id": "reset:android-conformance-r2",
   "package_id": "io.github.flyup82.androidconformance",
   "deterministic": true,
   "authority": "fresh_exact_android_qagent_approval_required",

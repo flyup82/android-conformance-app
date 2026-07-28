@@ -22,10 +22,29 @@ here.
 
 Repository authority was approved by Android QAgent
 `DEC-20260728-043`. The Android source, public handoff and static validation
-are being developed through reviewed changes. The current source is a
-composition/identity scaffold: it does not yet implement or claim the ten
-seeded behaviors. No APK has been published, installed or executed, and no
-Android device capability has been verified.
+are being developed through reviewed changes. Fixture revision
+`android-conformance-r2` implements source-level clean/normal-twin behavior and
+ten independently activated seed deltas. The behavior model has a plain-JDK
+unit harness, but the Android app has not been built, published, installed or
+executed. No APK, device, or conformance capability has been verified.
+
+## Public behavior surfaces
+
+| Seed | Route | Deterministic trigger | Bounded effect |
+|---|---|---|---|
+| `A-D-001` | `lifecycle` | recreate after increment | app-local lifecycle state |
+| `A-D-002` | `navigation` | back from local detail | app-local route |
+| `A-D-003` | `permission` | deny camera permission | permission prompt only; camera is never opened |
+| `A-D-004` | `network` | retry embedded transport | no external network |
+| `A-D-005` | `accessibility` | inspect symbol action | view semantics only |
+| `A-D-006` | `adaptive` | inspect long localized text | layout only |
+| `A-D-007` | `stability` | trigger controlled failure | exact fixture process only |
+| `A-D-008` | `persistence` | recreate after increment | exact fixture private storage only |
+| `A-D-009` | `intent` | send untrusted local route | explicit same-package intent only |
+| `A-D-010` | `webview` | activate local recovery link | embedded HTML only |
+
+The table is a public trigger/safety contract, not a private expected graph,
+finding, severity, evidence, or evaluator answer.
 
 ## Public compositions
 
@@ -47,11 +66,14 @@ without Android tooling:
 ```bash
 python3 tools/validate_public_handoff.py
 python3 -m unittest discover -s tests -v
+python3 tools/run_behavior_unit_tests.py
 ```
 
-The Gradle wrapper is pinned to 9.5.0. Its official-tag source URLs and file
-digests are recorded in `gradle/wrapper/source-lock.json`. A successful static
-validation or Gradle configuration is not APK or device evidence.
+The last command requires JDK 17 and compiles only the pure-Java behavior model
+and self-test; it does not invoke Gradle or Android tooling. The Gradle wrapper
+is pinned to 9.5.0. Its official-tag source URLs and file digests are recorded
+in `gradle/wrapper/source-lock.json`. Successful static or pure-Java validation
+is not Android build, APK, or device evidence.
 
 ## Security and authority
 

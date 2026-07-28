@@ -61,6 +61,30 @@ class PublicHandoffTest(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "seed order or membership"):
             validate(root)
 
+    def test_trigger_drift_is_rejected(self) -> None:
+        temp, root = self.copy_fixture()
+        self.addCleanup(temp.cleanup)
+        self.mutate(
+            root,
+            "seed-catalog.json",
+            lambda value: value["seeds"][3].update({"trigger_id": "other_retry"}),
+        )
+        with self.assertRaisesRegex(ValidationError, "catalog seed public handoff"):
+            validate(root)
+
+    def test_effect_scope_drift_is_rejected(self) -> None:
+        temp, root = self.copy_fixture()
+        self.addCleanup(temp.cleanup)
+        self.mutate(
+            root,
+            "seed-catalog.json",
+            lambda value: value["seeds"][8].update(
+                {"external_effects": ["implicit_external_intent"]}
+            ),
+        )
+        with self.assertRaisesRegex(ValidationError, "catalog seed public handoff"):
+            validate(root)
+
     def test_reset_package_drift_is_rejected(self) -> None:
         temp, root = self.copy_fixture()
         self.addCleanup(temp.cleanup)
@@ -81,6 +105,38 @@ class PublicHandoffTest(unittest.TestCase):
             lambda value: value["claims"].update({"apk_verified": True}),
         )
         with self.assertRaisesRegex(ValidationError, "claim boundary"):
+            validate(root)
+
+    def test_missing_behavior_unit_projection_is_rejected(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        behavior = (
+            root
+            / "app/src/main/java/io/github/flyup82/androidconformance/SeedBehavior.java"
+        )
+        behavior.write_text(
+            behavior.read_text(encoding="utf-8").replace(
+                "webViewRecoveryAvailable",
+                "removedRecoveryMethod",
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(ValidationError, "behavior contract"):
+            validate(root)
+
+    def test_external_network_permission_is_rejected(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        manifest = root / "app/src/main/AndroidManifest.xml"
+        manifest.write_text(
+            manifest.read_text(encoding="utf-8").replace(
+                "<application",
+                '<uses-permission android:name="android.permission.INTERNET" />\n'
+                "    <application",
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(ValidationError, "external network permission"):
             validate(root)
 
     def test_wrapper_tamper_is_rejected(self) -> None:

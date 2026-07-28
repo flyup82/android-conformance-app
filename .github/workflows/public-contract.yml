@@ -1,0 +1,28 @@
+name: public-contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate public handoff
+        run: python3 tools/validate_public_handoff.py
+      - name: Run deterministic tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Reject tracked signing material
+        run: |
+          if git ls-files | grep -E '\.(jks|keystore)$'; then
+            echo "tracked signing material is forbidden" >&2
+            exit 1
+          fi

@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0.0",
+  "fixture_revision": "android-conformance-r1",
+  "seeds": [
+    {
+      "id": "A-D-001",
+      "family": "lifecycle_state_loss",
+      "fixture_route": "lifecycle",
+      "normal_twin_route": "lifecycle",
+      "activation_flavor": "seed001"
+    },
+    {
+      "id": "A-D-002",
+      "family": "back_deep_link",
+      "fixture_route": "navigation",
+      "normal_twin_route": "navigation",
+      "activation_flavor": "seed002"
+    },
+    {
+      "id": "A-D-003",
+      "family": "permission_denial",
+      "fixture_route": "permission",
+      "normal_twin_route": "permission",
+      "activation_flavor": "seed003"
+    },
+    {
+      "id": "A-D-004",
+      "family": "network_recovery",
+      "fixture_route": "network",
+      "normal_twin_route": "network",
+      "activation_flavor": "seed004"
+    },
+    {
+      "id": "A-D-005",
+      "family": "accessibility_semantics",
+      "fixture_route": "accessibility",
+      "normal_twin_route": "accessibility",
+      "activation_flavor": "seed005"
+    },
+    {
+      "id": "A-D-006",
+      "family": "adaptive_localization",
+      "fixture_route": "adaptive",
+      "normal_twin_route": "adaptive",
+      "activation_flavor": "seed006"
+    },
+    {
+      "id": "A-D-007",
+      "family": "runtime_stability",
+      "fixture_route": "stability",
+      "normal_twin_route": "stability",
+      "activation_flavor": "seed007"
+    },
+    {
+      "id": "A-D-008",
+      "family": "persistence",
+      "fixture_route": "persistence",
+      "normal_twin_route": "persistence",
+      "activation_flavor": "seed008"
+    },
+    {
+      "id": "A-D-009",
+      "family": "intent_platform_boundary",
+      "fixture_route": "intent",
+      "normal_twin_route": "intent",
+      "activation_flavor": "seed009"
+    },
+    {
+      "id": "A-D-010",
+      "family": "webview_native_boundary",
+      "fixture_route": "webview",
+      "normal_twin_route": "webview",
+      "activation_flavor": "seed010"
+    }
+  ],
+  "compositions": [
+    {
+      "name": "clean",
+      "kind": "clean",
+      "active_seed_ids": []
+    },
+    {
+      "name": "normalTwin",
+      "kind": "normal_twin",
+      "active_seed_ids": []
+    },
+    {
+      "name": "seed001",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-001"]
+    },
+    {
+      "name": "seed002",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-002"]
+    },
+    {
+      "name": "seed003",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-003"]
+    },
+    {
+      "name": "seed004",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-004"]
+    },
+    {
+      "name": "seed005",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-005"]
+    },
+    {
+      "name": "seed006",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-006"]
+    },
+    {
+      "name": "seed007",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-007"]
+    },
+    {
+      "name": "seed008",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-008"]
+    },
+    {
+      "name": "seed009",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-009"]
+    },
+    {
+      "name": "seed010",
+      "kind": "single_seed",
+      "active_seed_ids": ["A-D-010"]
+    },
+    {
+      "name": "allSeeds",
+      "kind": "all_seeds",
+      "active_seed_ids": [
+        "A-D-001",
+        "A-D-002",
+        "A-D-003",
+        "A-D-004",
+        "A-D-005",
+        "A-D-006",
+        "A-D-007",
+        "A-D-008",
+        "A-D-009",
+        "A-D-010"
+      ]
+    }
+  ]
+}

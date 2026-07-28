@@ -2,15 +2,19 @@ package io.github.flyup82.androidconformance;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 final class FixtureComposition {
-    private static final Set<String> CATALOG = Collections.unmodifiableSet(SeedCatalog.ALL.stream()
-            .map(SeedCatalog.Seed::id)
-            .collect(Collectors.toCollection(HashSet::new)));
+    private static final Set<String> CATALOG;
+
+    static {
+        LinkedHashSet<String> seedIds = new LinkedHashSet<>();
+        for (SeedCatalog.Seed seed : SeedCatalog.ALL) {
+            seedIds.add(seed.id());
+        }
+        CATALOG = Collections.unmodifiableSet(seedIds);
+    }
 
     private final String kind;
     private final Set<String> activeSeeds;
@@ -22,9 +26,14 @@ final class FixtureComposition {
     }
 
     static FixtureComposition current() {
-        Set<String> seeds = Arrays.stream(BuildConfig.AQ_ACTIVE_SEEDS.split(",", -1))
-                .filter(value -> !value.isEmpty())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<String> seeds = new LinkedHashSet<>();
+        for (String value : Arrays.asList(
+                BuildConfig.AQ_ACTIVE_SEEDS.split(",", -1)
+        )) {
+            if (!value.isEmpty()) {
+                seeds.add(value);
+            }
+        }
         return new FixtureComposition(BuildConfig.AQ_COMPOSITION, seeds);
     }
 

@@ -343,6 +343,48 @@ def validate_source_projection(root: Path) -> None:
     if 'android:scheme="aqconformance"' not in manifest:
         raise ValidationError("local deep-link declaration")
 
+    compile_script = (root / "tools" / "compile_source_matrix.py").read_text(
+        encoding="utf-8"
+    )
+    workflow = (
+        root / ".github" / "workflows" / "public-contract.yml"
+    ).read_text(encoding="utf-8")
+    compile_variants = [
+        "Clean",
+        "NormalTwin",
+        *[f"Seed{index:03d}" for index in range(1, 11)],
+        "AllSeeds",
+    ]
+    for variant in compile_variants:
+        if f'"{variant}"' not in compile_script:
+            raise ValidationError(f"compile matrix missing {variant}")
+    required_compile_fragments = [
+        'f":app:compile{variant}DebugJavaWithJavac"',
+        '"./gradlew", "--no-daemon", "--stacktrace"',
+        "android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407",
+        'sdkmanager "platforms;android-36" "build-tools;36.0.0"',
+        'python3 tools/compile_source_matrix.py --execute',
+        '"$ANDROID_HOME/platforms/android-36/android.jar"',
+        '"$ANDROID_HOME/build-tools/36.0.0/source.properties"',
+    ]
+    combined_compile_contract = compile_script + "\n" + workflow
+    for fragment in required_compile_fragments:
+        if fragment not in combined_compile_contract:
+            raise ValidationError(f"compile-only CI missing {fragment}")
+    forbidden_workflow_fragments = [
+        "upload-artifact",
+        "./gradlew assemble",
+        "./gradlew bundle",
+        "./gradlew package",
+        "./gradlew install",
+        "connectedAndroidTest",
+        " adb ",
+        " emulator ",
+    ]
+    for fragment in forbidden_workflow_fragments:
+        if fragment in workflow:
+            raise ValidationError(f"compile-only CI contains forbidden {fragment}")
+
     forbidden_material = [
         path
         for path in root.rglob("*")

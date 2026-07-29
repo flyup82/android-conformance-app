@@ -94,6 +94,23 @@ artifact and removes the temporary keystore. Missing, partial or mismatched
 inputs fail before artifact publication. The workflow never installs an APK or
 contacts ADB, an emulator or a device.
 
+After the USER-owned workflow completes, download and extract its single
+artifact, then independently re-check the exact 13-file inventory, manifest
+digest, APK hashes and signing certificate with the pinned Build Tools 36.0.0
+`apksigner`:
+
+```bash
+python3 tools/verify_publication.py \
+  --publication-dir <absolute-extracted-artifact-directory> \
+  --source-revision <exact-40-character-main-sha> \
+  --certificate-sha256 <public-sha256-reference> \
+  --apksigner <absolute-build-tools-36.0.0-apksigner-path>
+```
+
+This verifier accepts no keystore or password, performs no installation or
+device action, rejects extra/missing/symlinked/tampered artifacts, and does not
+claim conformance or generalization.
+
 ## Security and authority
 
 - Never commit a signing key, keystore password, token or credential.

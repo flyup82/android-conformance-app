@@ -177,7 +177,7 @@ def _sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _canonical_digest(value: dict[str, Any]) -> str:
+def canonical_publication_digest(value: dict[str, Any]) -> str:
     encoded = json.dumps(
         value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode("utf-8")
@@ -249,7 +249,7 @@ def collect_publication(
             "generalization": False,
         },
     }
-    manifest = {**body, "publication_digest": _canonical_digest(body)}
+    manifest = {**body, "publication_digest": canonical_publication_digest(body)}
     staging = Path(
         tempfile.mkdtemp(prefix=".android-conformance-publication.", dir=output_parent)
     )

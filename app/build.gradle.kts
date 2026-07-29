@@ -2,6 +2,19 @@ plugins {
     id("com.android.application")
 }
 
+val releaseSigningEnvironment = mapOf(
+    "storeFile" to providers.environmentVariable("AQ_SIGNING_KEYSTORE").orNull,
+    "storePassword" to providers.environmentVariable("AQ_SIGNING_STORE_PASSWORD").orNull,
+    "keyAlias" to providers.environmentVariable("AQ_SIGNING_KEY_ALIAS").orNull,
+    "keyPassword" to providers.environmentVariable("AQ_SIGNING_KEY_PASSWORD").orNull,
+)
+val releaseSigningRequested = releaseSigningEnvironment.values.any { !it.isNullOrBlank() }
+val releaseSigningReady = releaseSigningEnvironment.values.all { !it.isNullOrBlank() }
+
+if (releaseSigningRequested && !releaseSigningReady) {
+    throw GradleException("external release signing configuration is incomplete")
+}
+
 val seedIds = listOf(
     "A-D-001",
     "A-D-002",
@@ -59,6 +72,17 @@ android {
         }
     }
 
+    signingConfigs {
+        if (releaseSigningReady) {
+            create("externalRelease") {
+                storeFile = file(requireNotNull(releaseSigningEnvironment["storeFile"]))
+                storePassword = requireNotNull(releaseSigningEnvironment["storePassword"])
+                keyAlias = requireNotNull(releaseSigningEnvironment["keyAlias"])
+                keyPassword = requireNotNull(releaseSigningEnvironment["keyPassword"])
+            }
+        }
+    }
+
     buildTypes {
         debug {
             isDebuggable = true
@@ -67,6 +91,9 @@ android {
             isMinifyEnabled = false
             // Release signing is intentionally external and USER-owned.
             // Never add a keystore or password to this repository.
+            if (releaseSigningReady) {
+                signingConfig = signingConfigs.getByName("externalRelease")
+            }
         }
     }
 

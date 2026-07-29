@@ -54,6 +54,12 @@ FORBIDDEN_KEY_PARTS = {
     "token",
 }
 SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
+BUILD_VARIANTS = [
+    "clean",
+    "normalTwin",
+    *[f"seed{index:03d}" for index in range(1, 11)],
+    "allSeeds",
+]
 
 
 class ValidationError(ValueError):
@@ -202,6 +208,78 @@ def validate_handoff(
         "generalization": False,
     }:
         raise ValidationError("claim boundary")
+
+
+def validate_build_publication_contract(root: Path) -> None:
+    contract = read_json(root / "public" / "build-publication-contract.json")
+    walk_keys(contract)
+    expected = {
+        "schema_version": "1.0.0",
+        "status": "ready_for_user_handoff",
+        "workflow": ".github/workflows/build-publication.yml",
+        "environment_reference": "github-environment:conformance-release",
+        "source_revision_policy": "workflow_dispatch_main_head_exact_sha",
+        "fixture_revision": "android-conformance-r2",
+        "package_id": PACKAGE_ID,
+        "build_variants": BUILD_VARIANTS,
+        "artifact_count": 13,
+        "artifact_channel": "github_actions_artifact",
+        "retention_days": 30,
+        "signing": {
+            "mode": "user_managed_external",
+            "certificate_reference": (
+                "github-environment-variable:AQ_SIGNING_CERTIFICATE_SHA256"
+            ),
+            "key_material_present": False,
+        },
+        "claims": {
+            "workflow_ready": True,
+            "signed_apk_published": False,
+            "device_verified": False,
+            "conformance_verified": False,
+            "generalization": False,
+        },
+    }
+    if contract != expected:
+        raise ValidationError("build publication contract")
+
+    workflow = (
+        root / ".github" / "workflows" / "build-publication.yml"
+    ).read_text(encoding="utf-8")
+    required = [
+        "workflow_dispatch:",
+        "if: github.ref == 'refs/heads/main'",
+        "environment: conformance-release",
+        "permissions:\n  contents: read",
+        "actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+        "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+        "actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+        "android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407",
+        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+        "AQ_SIGNING_KEYSTORE_BASE64",
+        "AQ_SIGNING_CERTIFICATE_SHA256",
+        "-storepass:env AQ_SIGNING_STORE_PASSWORD",
+        "python3 tools/build_publication.py",
+        "--source-revision \"$GITHUB_SHA\"",
+        "retention-days: 30",
+        "artifact_digest=${{ steps.upload.outputs.artifact-digest }}",
+        'rm -f "$RUNNER_TEMP/android-conformance-release.jks"',
+    ]
+    for fragment in required:
+        if fragment not in workflow:
+            raise ValidationError(f"build publication workflow missing {fragment}")
+    forbidden = [
+        "pull_request:",
+        "\n  push:",
+        "./gradlew install",
+        "connectedAndroidTest",
+        " adb ",
+        " emulator ",
+        "gh release",
+    ]
+    for fragment in forbidden:
+        if fragment in workflow:
+            raise ValidationError(f"build publication workflow contains {fragment}")
 
 
 def validate_wrapper(root: Path) -> None:
@@ -409,6 +487,7 @@ def validate(root: Path = ROOT) -> None:
     validate_catalog(catalog)
     validate_reset(reset)
     validate_handoff(handoff, catalog_path, reset_path)
+    validate_build_publication_contract(root)
     validate_wrapper(root)
     validate_source_projection(root)
 

@@ -25,8 +25,10 @@ Repository authority was approved by Android QAgent
 are being developed through reviewed changes. Fixture revision
 `android-conformance-r2` implements source-level clean/normal-twin behavior and
 ten independently activated seed deltas. The behavior model has a plain-JDK
-unit harness, but the Android app has not been built, published, installed or
-executed. No APK, device, or conformance capability has been verified.
+unit harness. A manual, environment-gated build publication workflow now has a
+fail-closed public contract for all thirteen release compositions, but no
+USER-owned signing input is configured and no APK has been built, published,
+installed or executed. No device or conformance capability has been verified.
 
 ## Public behavior surfaces
 
@@ -80,6 +82,17 @@ an emulator or a device action.
 The Gradle wrapper is pinned to 9.5.0. Its official-tag source URLs and file
 digests are recorded in `gradle/wrapper/source-lock.json`. Successful static,
 pure-Java or compile-only validation is not APK, runtime or device evidence.
+
+`public/build-publication-contract.json` defines the separate manual
+`build-publication` workflow. It runs only from the exact `main` revision in the
+`conformance-release` GitHub environment. The USER configures the external
+keystore and passwords as environment secrets and publishes only the expected
+certificate SHA-256 as environment variable
+`AQ_SIGNING_CERTIFICATE_SHA256`. The workflow verifies the certificate before
+and after signing, stages exactly thirteen APKs, uploads one 30-day Actions
+artifact and removes the temporary keystore. Missing, partial or mismatched
+inputs fail before artifact publication. The workflow never installs an APK or
+contacts ADB, an emulator or a device.
 
 ## Security and authority
 

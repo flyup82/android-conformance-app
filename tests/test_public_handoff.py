@@ -179,6 +179,48 @@ class PublicHandoffTest(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "compile-only CI missing"):
             validate(root)
 
+    def test_publication_workflow_cannot_become_automatic(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        workflow = root / ".github/workflows/build-publication.yml"
+        workflow.write_text(
+            workflow.read_text(encoding="utf-8").replace(
+                "  workflow_dispatch:",
+                "  pull_request:",
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            ValidationError, "build publication workflow missing workflow_dispatch"
+        ):
+            validate(root)
+
+    def test_publication_workflow_requires_exact_action_pins(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        workflow = root / ".github/workflows/build-publication.yml"
+        workflow.write_text(
+            workflow.read_text(encoding="utf-8").replace(
+                "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+                "actions/upload-artifact@v4",
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            ValidationError, "build publication workflow missing actions/upload"
+        ):
+            validate(root)
+
+    def test_publication_contract_cannot_claim_an_artifact_before_handoff(self) -> None:
+        temp, root = self.copy_repository()
+        self.addCleanup(temp.cleanup)
+        path = root / "public/build-publication-contract.json"
+        value = json.loads(path.read_text(encoding="utf-8"))
+        value["claims"]["signed_apk_published"] = True
+        path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValidationError, "build publication contract"):
+            validate(root)
+
     def test_wrapper_tamper_is_rejected(self) -> None:
         temp, root = self.copy_repository()
         self.addCleanup(temp.cleanup)

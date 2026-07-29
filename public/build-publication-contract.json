@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "status": "ready_for_user_handoff",
+  "workflow": ".github/workflows/build-publication.yml",
+  "environment_reference": "github-environment:conformance-release",
+  "source_revision_policy": "workflow_dispatch_main_head_exact_sha",
+  "fixture_revision": "android-conformance-r2",
+  "package_id": "io.github.flyup82.androidconformance",
+  "build_variants": [
+    "clean",
+    "normalTwin",
+    "seed001",
+    "seed002",
+    "seed003",
+    "seed004",
+    "seed005",
+    "seed006",
+    "seed007",
+    "seed008",
+    "seed009",
+    "seed010",
+    "allSeeds"
+  ],
+  "artifact_count": 13,
+  "artifact_channel": "github_actions_artifact",
+  "retention_days": 30,
+  "signing": {
+    "mode": "user_managed_external",
+    "certificate_reference": "github-environment-variable:AQ_SIGNING_CERTIFICATE_SHA256",
+    "key_material_present": false
+  },
+  "claims": {
+    "workflow_ready": true,
+    "signed_apk_published": false,
+    "device_verified": false,
+    "conformance_verified": false,
+    "generalization": false
+  }
+}
